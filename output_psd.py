@@ -111,13 +111,13 @@ v = alpha*math.pi  # velocity rad/s
 v_str = '%spi' % alpha  # string to specify velocity in simulation file
 theta_moving = np.empty((N, L))  # varying source angles
 A0 = 1
-A1 = 3
+A1 = 1
 phi0 = np.random.uniform(-math.pi, math.pi, 1)
 phi1 = np.random.uniform(-math.pi, math.pi, 1)
 f0 = 10
 omega0 = 2*math.pi*f0
 omega1 = 2*math.pi*f0
-SNR = 0  # Signal to noise ratio in dB
+SNR = -10  # Signal to noise ratio in dB
 delta_theta = math.pi/6
 theta_sources = np.array([0 + delta_theta, delta_theta + (math.pi)])
 
@@ -143,15 +143,26 @@ noise_sig = np.random.normal(scale=np.sqrt(var_noise/2), size=(len(sig0),)) + 1j
 y = sig0 + sig1 + noise_sig
 
 y_psd_hat_periodogram = np.empty((nsamples_seg,n_pos))
+y_psd_hat_bartlett = np.empty((round(nsamples_seg/8),n_pos))
+y_psd_hat_welch = np.empty((round(nsamples_seg/8),n_pos))
 for i in range(n_pos):
     seg = y[i*nsamples_seg:(i+1)*nsamples_seg]
-    freq, y_psd_hat_periodogram[:,i] = estimate_psd(seg,fs,'periodogram')
+    freq, y_psd_hat_bartlett[:,i] = estimate_psd(seg, fs, 'bartlett', nperseg=round(nsamples_seg/8))
+    freq, y_psd_hat_periodogram[:, i] = estimate_psd(seg, fs, 'periodogram')
+    freq, y_psd_hat_welch[:, i] = estimate_psd(seg, fs, 'welch', nperseg=round(nsamples_seg / 8),noverlap=round(nsamples_seg/(2*8)))
 
 fig = plt.figure()
-plt.plot(freq, y_psd_hat_periodogram[:,0])
-plt.plot(freq, y_psd_hat_periodogram[:,1])
-plt.plot(freq, y_psd_hat_periodogram[:,2])
-plt.plot(freq, y_psd_hat_periodogram[:,3])
+freq = np.fft.fftshift(freq)
+y_psd_hat_periodogram = np.fft.fftshift(y_psd_hat_periodogram, axes=0)
+y_psd_hat_bartlett = np.fft.fftshift(y_psd_hat_bartlett, axes=0)
+y_psd_hat_welch = np.fft.fftshift(y_psd_hat_welch, axes=0)
+plt.plot(freq, y_psd_hat_welch[:,0])
+plt.plot(freq, y_psd_hat_welch[:,1])
+plt.plot(freq, y_psd_hat_welch[:,2])
+plt.plot(freq, y_psd_hat_welch[:,3])
+plt.xlabel('frequency [Hz]')
+plt.ylabel('PSD [V**2/Hz]')
+plt.legend(["Position 1","Position 2","Position 3","Position 4"])
 plt.show()
 
 
