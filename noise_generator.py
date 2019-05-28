@@ -63,6 +63,7 @@ def generate_noise(L, fs, duration,positions, noise_power):
 
     if len(noise_power) != L:
         print("number of noise power elements doesnt match number of sources")
+        return
 
     Nsec = duration  # time window in seconds
     N = round(Nsec * fs)  # number of samples
