@@ -18,11 +18,11 @@ May 2019
 
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import math
-import soundfile as sf
-import scipy.signal
-import statistics
+
+"""
+Defining the ideal microphone response patterns
+"""
 
 def _cardioid(x):
     return 0.5 * (1 + np.cos(x))
@@ -50,37 +50,64 @@ mic_resp = {
     'omni': _omni
 }
 
+"""
+Function for generating noise signals.
 
-def generate_noise(L, fs, duration,positions, noise_power):
+Parameters
+-------------
+L : Number of sources
+fs : sampling frequency in Hz
+duration : signal duration in seconds
+positions : source positions. 3 options are possible:
+            1. 'uniform' -> sources are uniformly distributed along the azimuthal plane
+            2. 'random' -> the source positions are randomly sorted
+            3. numpy ndarray -> the source positions are passed as an array. If the number L and the 
+            length of the array don't match, the function quits
+noise_power : array with noise power of each source. If the number L and the length of the array don't match,
+the function quits 
+
+Returns
+------------
+theta_sources : source positions in radians
+sources_sig : L x (duration*fs) ndarray with each source signal in a row    
+      
+"""
+
+
+def generate_noise(L, fs, duration, positions, noise_power):
+
+    # Setting up the source positions
     if positions=='uniform':
         theta_sources = np.linspace(0, 2 * math.pi * (1 - 1 / L), L)
+
     if positions=='random':
         theta_sources = np.random.uniform(low=0., high=2 * math.pi, size=(L,))
+
+    # Verifying number of position elements
     if isinstance(positions,np.ndarray):
         if len(positions)!=L:
-            print("Wrong array")
+            print("Number of position elements doesn't match number of sources")
             return
 
+    # Verifying number of noise power elements
     if len(noise_power) != L:
-        print("number of noise power elements doesnt match number of sources")
+        print("Number of noise power elements doesn't match number of sources")
         return
 
     Nsec = duration  # time window in seconds
     N = round(Nsec * fs)  # number of samples
     tstep = (Nsec / N)  # time step between each sample
     time = np.arange(N) * tstep
-    amp_array = np.ones((L,))
-    sources_sig = np.empty((L,len(time)),dtype=complex)
+    sources_sig = np.empty((L, len(time)), dtype=complex)
 
+    # Generating signals
     for i in range(L):
-        sources_sig[i,:] = np.random.normal(scale=np.sqrt(noise_power[i]*fs/2),size=N)
+        sources_sig[i,:] = np.random.normal(scale=np.sqrt(noise_power[i]*fs/2), size=N)
 
     return theta_sources, sources_sig
 
 
 def main():
-    fs = 16000
-
     print("Hello noise_generator")
 
 
