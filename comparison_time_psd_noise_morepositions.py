@@ -43,7 +43,7 @@ Nsamples_total = int(round((duration_sig*fs)))
 n_pos = 24
 
 # Generating signals
-angles_sources, sources_signals = generate_noise(nb_sources, fs, duration_sig, 'uniform',np.array([1,1]))
+angles_sources, sources_signals = generate_noise(nb_sources, fs, duration_sig, 'uniform',np.array([0.3, 0.4]))
 nsamples_seg, delta_theta, y = generate_mic_output(sources_signals, angles_sources, n_pos, 'cardioid', theta_m=0)
 
 """
@@ -84,15 +84,26 @@ x[180] = psd_S[idx_freq, 1]
 
 # Finally, cheating PSD estimation of microphone output
 matrix_A = np.power(mic_resp['cardioid'](theta_response),2)
+print(np.linalg.cond(matrix_A))
 y_psd_cheat = matrix_A @ x
 y_psd_periodogram_singlefreq = y_psd_hat_periodogram[idx_freq, :]
+angle_axis = np.arange(start=0,stop=360,step=int(360/n_pos))
+angle_ticks = np.arange(start=0,stop=360,step=2* int(360/n_pos))
+angle_labels = np.empty((len(angle_ticks),), dtype=object)
 
-fig = plt.figure()
-plt.plot(np.arange(start=0,stop=360,step=15),y_psd_periodogram_singlefreq)
-plt.plot(np.arange(start=0,stop=360,step=15),y_psd_cheat)
-plt.legend([r'$\Phi_{Y}$', r'$A@\Phi_{S}$'])
-plt.xlabel(r"Position ($\degree$)")
+for idx in range(len(angle_ticks)):
+    angle_labels[idx] = r'$%s\degree$' % angle_ticks[idx]
 
+
+fig = plt.figure(figsize=(15,6))
+plt.plot(angle_axis,y_psd_periodogram_singlefreq)
+plt.plot(angle_axis,y_psd_cheat)
+plt.xticks(ticks=angle_ticks,labels=angle_labels)
+plt.legend([r'$\Phi_{Y}$', r'$A\times\Phi_{S}$'])
+plt.xlabel(r"Position", fontsize=14)
+plt.ylabel("PSD estimate at one frequency", fontsize=14)
+plt.xlim(angle_axis[0],angle_axis[-1])
+plt.ticklabel_format(axis='y',style='sci', scilimits=(0, 1))
 plt.show()
 print("Hello World")
 
