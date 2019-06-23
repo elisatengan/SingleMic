@@ -65,12 +65,15 @@ v_str = '%spi' % alpha  # string to specify velocity in simulation file
 theta_moving = np.empty((N, L))  # varying source angles
 A0 = 1
 A1 = 3
-phi0 = np.random.uniform(0, 2*math.pi, 1)
-phi1 = np.random.uniform(0, 2*math.pi, 1)
-omega0 = 2*math.pi*2000
-omega1 = 2*math.pi*2000
+phi0 = np.random.uniform(-math.pi, math.pi, 1)
+phi1 = np.random.uniform(-math.pi, math.pi, 1)
+f0 = 50
+omega0 = 2*math.pi*f0
+omega1 = 2*math.pi*f0
 SNR = 0  # Signal to noise ratio in dB
 theta_sources = np.array([0, math.pi])
+print("phi0 = %s     phi1 = %s" % (phi0, phi1))
+
 
 """
 Setting up signals and STFT
@@ -135,6 +138,15 @@ fig1 = plt.figure()
 plt.plot(ordered_freq, np.abs(ordered_S_hat_sig0))
 plt.plot(ordered_freq, np.abs(ordered_S_hat_sig1))
 plt.show()
+
+# fig2 = plt.figure()
+# plt.plot(ordered_freq, np.angle(ordered_S_hat_sig0))
+# plt.plot(ordered_freq, np.angle(ordered_S_hat_sig1))
+# plt.show()
+
+idx_f0 = np.where(freq==f0)[0][0]
+print("S0_hat = %s     S1_hat = %s  " % (S_hat_sig0[idx_f0], S_hat_sig1[idx_f0]))
+print("phi0_hat = %s     phi1_hat = %s" % (np.angle(S_hat_sig0[idx_f0]), np.angle(S_hat_sig1[idx_f0])))
 
 
 
