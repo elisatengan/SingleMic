@@ -50,6 +50,7 @@ mic_resp = {
     'omni': _omni
 }
 
+
 def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256, noverlap=None):
     freq = None
     signal_psd = None
@@ -92,7 +93,6 @@ def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256
         # freq, signal_psd = scipy.signal.welch(signal, fs=fs, nperseg=nperseg, window=window, noverlap=noverlap)
 
     return freq, signal_psd
-
 
 
 """
