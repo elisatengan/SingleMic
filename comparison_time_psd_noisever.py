@@ -39,7 +39,7 @@ n_pos = 6
 
 # Generating signals
 angles_sources, sources_signals = generate_noise(nb_sources, fs, duration_sig, positions='uniform',
-                                                 noise_power=np.array([1,1]))
+                                                 noise_power=np.array([0.3, 0.4]))
 nsamples_seg, delta_theta, y = generate_mic_output(sources_signals, angles_sources, n_pos, 'cardioid', theta_m=0)
 
 """
@@ -85,12 +85,15 @@ y_psd_cheat_singlefreq = matrix_A @ x
 y_psd_periodogram_singlefreq = y_psd_hat_periodogram[idx_freq, :]
 
 # Plotting comparison between "feasible" PSD estimation and cheated version
-fig = plt.figure()
-plt.plot(y_psd_periodogram_singlefreq)
-plt.plot(y_psd_cheat_singlefreq)
-plt.legend([r'$\Phi_{Y}$', r'$A@\Phi_{S}$'])
-plt.xlabel("Position")
+fig = plt.figure(figsize=(15, 6))
+h1, = plt.plot(np.arange(6), y_psd_periodogram_singlefreq, label=r'$\Phi_{Y}$')
+h2, = plt.plot(np.arange(6), y_psd_cheat_singlefreq, label=r'$A\times\Phi_{S}$')
+plt.legend()
+plt.xlabel("Position", fontsize=14)
+plt.ylabel("PSD estimate at one frequency", fontsize=14)
+plt.xlim(0, 5)
 plt.xticks(ticks=np.arange(6), labels=[r'$0\degree$', r'$60\degree$', r'$120\degree$', r'$180\degree$', r'$240\degree$', r'$300\degree$'])
+plt.ticklabel_format(axis='y',style='sci', scilimits=(0, 1))
 plt.show()
 print("Hello World")
 
