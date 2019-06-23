@@ -53,7 +53,7 @@ Defining main parameters
 """
 # Script for simulating whole model with speech samples.
 fs = 16000  # sampling frequency
-Nsec = 0.02  # time window in seconds
+Nsec = 0.02 # time window in seconds
 N = round(Nsec*fs)  # number of samples
 tstep = (Nsec/N)  # time step between each sample
 time = np.arange(N*100) * tstep
@@ -64,9 +64,11 @@ v = alpha*math.pi  # velocity rad/s
 v_str = '%spi' % alpha  # string to specify velocity in simulation file
 theta_moving = np.empty((N, L))  # varying source angles
 A0 = 1
-phi0 = np.random.uniform(0, 2*math.pi, 1)[0]
+# phi0 = np.random.uniform(0, 2*math.pi, 1)[0]
+phi0 = math.pi/2
+f00 = 50
 f0 = 50  # Phase shift is visible for low frequencies
-omega0 = 2*math.pi*f0
+omega0 = 2*math.pi*f00
 SNR = 0  # Signal to noise ratio in dB
 theta_sources = 0  # one source at 0 degrees
 """
@@ -74,8 +76,9 @@ Setting up signals and STFT
 """
 sig0 = A0 * np.exp(1j*(omega0*time + phi0))
 freq, t, sig0_STFT = scipy.signal.stft(sig0, fs, nperseg=N, return_onesided=False)
-idx_f0 = np.where(freq==f0)[0][0]  # index of signal's frequency in STFT freq array
+idx_f0 = np.where(freq == f0)[0][0]  # index of signal's frequency in STFT freq array
 S = sig0_STFT
+
 
 # Generate noise
 var_noise = (A0*A0)/(math.pow(10, (SNR/10)))
@@ -146,6 +149,8 @@ fig3 = plt.figure()
 plt.plot(t, (np.angle(Y[:,idx_f0])))
 plt.xlabel('Time (s)')
 plt.ylabel(r'$\angle Y(\omega = \omega_0)$ (rad)')
+
+
 
 plt.show()
 
