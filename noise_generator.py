@@ -24,6 +24,7 @@ import math
 Defining the ideal microphone response patterns
 """
 
+
 def _cardioid(x):
     return 0.5 * (1 + np.cos(x))
 
@@ -50,37 +51,39 @@ mic_resp = {
     'omni': _omni
 }
 
-"""
-Function for generating noise signals.
-
-Parameters
--------------
-L : Number of sources
-fs : sampling frequency in Hz
-duration : signal duration in seconds
-positions : source positions. 3 options are possible:
-            1. 'uniform' -> sources are uniformly distributed along the azimuthal plane
-            2. 'random' -> the source positions are randomly sorted
-            3. numpy ndarray -> the source positions are passed as an array. If the number L and the 
-            length of the array don't match, the function quits
-noise_power : array with noise power of each source. If the number L and the length of the array don't match,
-the function quits 
-
-Returns
-------------
-theta_sources : source positions in radians
-sources_sig : L x (duration*fs) ndarray with each source signal in a row    
-      
-"""
-
 
 def generate_noise(L, fs, duration, positions, noise_power):
 
+    """
+    Function for generating noise signals.
+
+    Parameters
+    -------------
+    L : number of sources
+    fs : sampling frequency in Hz
+    duration : signal duration in seconds
+    positions : source positions. 3 options are possible:
+                1. 'uniform' -> sources are uniformly distributed along the azimuthal plane
+                2. 'random' -> the source positions are randomly sorted
+                3. numpy ndarray -> the source positions are passed as an array. If the number L and the
+                length of the array don't match, the function quits
+    noise_power : array with noise power of each source. If the number L and the length of the array don't match,
+    the function quits
+
+    Returns
+    ------------
+    theta_sources : source positions in radians
+    sources_sig : L x (duration*fs) ndarray with each source signal in a row
+
+    """
+
     # Setting up the source positions
-    if positions=='uniform':
+    if isinstance(positions,np.ndarray):
+        theta_sources = positions
+    elif positions=='uniform':
         theta_sources = np.linspace(0, 2 * math.pi * (1 - 1 / L), L)
 
-    if positions=='random':
+    elif positions=='random':
         theta_sources = np.random.uniform(low=0., high=2 * math.pi, size=(L,))
 
     # Verifying number of position elements
