@@ -96,7 +96,7 @@ y_dft = np.fft.fft(y, n=1024)
 fig0 = plt.figure()
 freq = fs*np.fft.fftfreq(1024)
 # plt.plot(freq, np.power(abs(y_dft),2)/(1024*fs))
-plt.plot(freq, np.power(abs(y_dft)/1024,2))
+plt.plot(freq, (np.power(abs(y_dft)/1024,2)))
 #
 #
 fig1 = plt.figure()
@@ -109,13 +109,13 @@ plt.ylabel('PSD [V**2/Hz]')
 """
 Elisa's Bartlett method for psd estimation
 """
-n = 256
+n = 512
 segment = np.empty((n,))
 seg_dft = np.empty((n, round(len(y)/n)),dtype=complex)
 for i in range(round(len(y)/n)):
     segment = y[i*n:(i+1)*n]
     seg_dft[:,i] = np.fft.fft(segment, n)
-seg_psd = np.power((abs(seg_dft)/n),2)
+seg_psd = (np.power((abs(seg_dft)/n),2))/(fs/n)
 est_psd = np.mean(seg_psd, axis=1)
 
 
