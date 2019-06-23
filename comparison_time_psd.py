@@ -37,7 +37,7 @@ duration_sig = 6
 n_pos = 6
 
 # Generating signals
-angles_sources, sources_signals = generate_sources(nb_sources, fs, f0, duration_sig, 'uniform')
+angles_sources, sources_signals = generate_sources(nb_sources, fs, f0, duration_sig, positions='uniform')
 nsamples_seg, delta_theta, y = generate_mic_output(sources_signals, angles_sources, n_pos, 'cardioid', theta_m=0)
 
 """
