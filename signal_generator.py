@@ -18,7 +18,6 @@ May 2019
 
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 
 """
@@ -52,32 +51,32 @@ mic_resp = {
     'omni': _omni
 }
 
-"""
-Function for generating complex exponential signals with random phase.
-
-Parameters
--------------
-L : Number of sources
-fs : sampling frequency in Hz
-f0 : fundamental frequency of complex exponential signals. All signals here have the same frequency
-duration : signal duration in seconds
-positions : source positions. 3 options are possible:
-            1. 'uniform' -> sources are uniformly distributed along the azimuthal plane
-            2. 'random' -> the source positions are randomly sorted
-            3. numpy ndarray -> the source positions are passed as an array. If the number L and the 
-            length of the array don't match, the function quits
-amplitudes : array with amplitudes for signals. If not passed as an argument, all amps are set to 1.
-            If the number L and the length of the array don't match, the function quits
-
-Returns
-------------
-theta_sources : source positions in radians
-sources_sig : L x (duration*fs) ndarray with each source signal in a row    
-
-"""
-
 
 def generate_sources(L, fs, f0, duration, positions, amplitudes=None):
+
+    """
+    Function for generating complex exponential signals with random phase.
+
+    Parameters
+    -------------
+    L : number of sources
+    fs : sampling frequency in Hz
+    f0 : fundamental frequency of complex exponential signals. All signals here have the same frequency
+    duration : signal duration in seconds
+    positions : source positions. 3 options are possible:
+                1. 'uniform' -> sources are uniformly distributed along the azimuthal plane
+                2. 'random' -> the source positions are randomly sorted
+                3. numpy ndarray -> the source positions are passed as an array. If the number L and the
+                length of the array don't match, the function quits
+    amplitudes : array with amplitudes for signals. If not passed as an argument, all amps are set to 1.
+                If the number L and the length of the array don't match, the function quits
+
+    Returns
+    ------------
+    theta_sources : source positions in radians
+    sources_sig : L x (duration*fs) ndarray with each source signal in a row
+
+    """
 
     # Setting up the source positions
     if positions=='uniform':
@@ -117,35 +116,34 @@ def generate_sources(L, fs, f0, duration, positions, amplitudes=None):
     return theta_sources, sources_sig
 
 
-"""
-Function for generating microphone's output signal.
-
-Parameters
--------------
-sources_sig: numpy ndarray with each signal in each row
-theta_sources : source positions in Hz
-npos : number of different positions in which the microphone records. Microphone rotates
-       with a constant angular shift.
-micresp_string : string with name of microphone response to be considered
-theta_m : microphone's initial position relative to "global" reference
-
-
-Returns
-------------
-nsamples_seg : number of samples obtained per microphone position
-delta_theta : angular distance between microphone positions
-mic_output :  1D array with microphone's output signal
-
--------------------------------------------------------------------------------------------------
-WARNING : This function is not yet robust enough. It still considers that the user will be smart
-          enough to choose a signal duration that will lead to na integer number of samples
-          per positions considered
--------------------------------------------------------------------------------------------------
-
-"""
-
-
 def generate_mic_output(sources_sig, theta_sources,npos, micresp_string, theta_m=0.):
+
+    """
+    Function for generating microphone's output signal.
+
+    Parameters
+    -------------
+    sources_sig: numpy ndarray with each signal in each row
+    theta_sources : source positions in Hz
+    npos : number of different positions in which the microphone records. Microphone rotates
+           with a constant angular shift.
+    micresp_string : string with name of microphone response to be considered
+    theta_m : microphone's initial position relative to "global" reference
+
+
+    Returns
+    ------------
+    nsamples_seg : number of samples obtained per microphone position
+    delta_theta : angular distance between microphone positions
+    mic_output :  1D array with microphone's output signal
+
+    -------------------------------------------------------------------------------------------------
+    WARNING : This function is not yet robust enough. It still considers that the user will be smart
+              enough to choose a signal duration that will lead to na integer number of samples
+              per positions considered
+    -------------------------------------------------------------------------------------------------
+
+    """
 
     # Getting the number of sources
     L = np.shape(sources_sig)[0]
