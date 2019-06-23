@@ -29,6 +29,7 @@ import statistics
 def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256, noverlap=None):
     freq = None
     signal_psd = None
+    seg_psd = None
     if noverlap is None:
         noverlap = round(nperseg/2)
 
@@ -37,6 +38,7 @@ def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256
         freq = np.fft.fftfreq(len(signal))*fs
         signal_psd = np.power(abs(signal_FT),2)/(fs/len(signal))
 
+
     if method == 'bartlett':
         nsegs = round(len(signal) / nperseg)
         seg_FT = np.empty((nperseg, nsegs), dtype=complex)
@@ -44,6 +46,8 @@ def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256
             segment = signal[i * nperseg:(i + 1) * nperseg]
             seg_FT[:, i] = np.fft.fft(segment, nperseg)/nperseg
         seg_psd = np.power(abs(seg_FT), 2)/(fs/nperseg)
+
+
         freq = np.fft.fftfreq(nperseg)*fs
         signal_psd = np.mean(seg_psd,axis=1)
 
@@ -62,12 +66,14 @@ def estimate_psd(signal, fs, method='periodogram', window='hanning', nperseg=256
         for i in range(nwindows):
             segment = np.multiply(sig[i * noffset:(i * noffset) + nperseg], hann_window)
             seg_FT[:, i] = (np.fft.fft(segment, nperseg)) / nperseg
+
         seg_psd = (np.power(abs(seg_FT), 2)) / ENBW
+
         freq = np.fft.fftfreq(nperseg) * fs
         signal_psd = np.mean(seg_psd, axis=1)
         # freq, signal_psd = scipy.signal.welch(signal, fs=fs, nperseg=nperseg, window=window, noverlap=noverlap)
 
-    return freq, signal_psd
+    return freq, signal_psd, seg_psd
 
 
 """
@@ -109,10 +115,17 @@ var_noise = var_sig0/(math.pow(10, (SNR/10)))
 noise_sig = np.random.normal(scale=np.sqrt(var_noise/2), size=(len(sig0),)) + 1j * np.random.normal(scale=np.sqrt(var_noise/2), size=(len(sig0),))  # + (np.random.uniform(0, np.sqrt(var_noise/2), size=(len(sig0),)))*1j
 y = sig0 + noise_sig
 
+f_periodogram, Pyy_periodogram, _ = estimate_psd(y,fs,method='periodogram')
+f_bartlett, Pyy_bartlett, seg_psdd = estimate_psd(y,fs,method='bartlett',nperseg=256)
+f_welch, Pyy_welch, _ = estimate_psd(y,fs,method='welch',nperseg=256,window='hanning',noverlap=128)
 
-f_periodogram, Pyy_periodogram = estimate_psd(y,fs,method='periodogram')
-f_bartlett, Pyy_bartlett = estimate_psd(y,fs,method='bartlett',nperseg=256)
-f_welch, Pyy_welch = estimate_psd(y,fs,method='welch',nperseg=256,window='hanning',noverlap=128)
+f_periodogram = np.fft.fftshift(f_periodogram)
+f_bartlett = np.fft.fftshift(f_bartlett)
+f_welch = np.fft.fftshift(f_welch)
+
+Pyy_periodogram = np.fft.fftshift(Pyy_periodogram, axes=0)
+Pyy_bartlett = np.fft.fftshift(Pyy_bartlett, axes=0)
+Pyy_welch = np.fft.fftshift(Pyy_welch, axes=0)
 
 plt.figure()
 plt.plot(f_periodogram,Pyy_periodogram)
@@ -122,5 +135,10 @@ plt.plot(f_welch, Pyy_welch)
 plt.xlabel('frequency [Hz]')
 plt.ylabel('PSD [V**2/Hz]')
 plt.legend(["Periodogram", "Bartlett", "Welch"])
+
+
+plt.figure()
+plt.plot(f_bartlett,np.fft.fftshift(seg_psdd[:,0],axes=0))
+plt.plot(f_bartlett,Pyy_bartlett)
 plt.show()
 
