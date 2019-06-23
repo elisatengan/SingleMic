@@ -39,7 +39,7 @@ Nsamples_total = int(round((duration_sig*fs)))  # used only for debugging
 n_pos = 6
 
 # Generating signals
-angles_sources, sources_signals = generate_noise(nb_sources, fs, duration_sig, 'uniform',np.array([1,1]))
+angles_sources, sources_signals = generate_noise(nb_sources, fs, duration_sig, 'uniform',np.array([0.3,0.4]))
 nsamples_seg, delta_theta, y = generate_mic_output(sources_signals, angles_sources, n_pos, 'cardioid', theta_m=0)
 
 
@@ -80,9 +80,9 @@ L = 16
 alpha = 0.90  # Exponential averaging factor
 
 numfreq = len(freq_psdy)
-psds1_welch = np.empty((numfreq, nwindows))
-psds2_welch = np.empty((numfreq, nwindows))
-psdsy_welch = np.empty((numfreq, nwindows))
+psds1_MA = np.empty((numfreq, nwindows))
+psds2_MA = np.empty((numfreq, nwindows))
+psdsy_MA = np.empty((numfreq, nwindows))
 
 psds1_exp = np.empty((numfreq, nwindows))
 psds2_exp = np.empty((numfreq, nwindows))
@@ -97,14 +97,14 @@ for idx in range(nwindows):
 
     # Welch averaging
     if idx < L-1:
-        psds1_welch[:, idx] = np.sum(psds1[:, 0:idx+1], axis=1)/L
-        psds2_welch[:, idx] = np.sum(psds2[:, 0:idx + 1], axis=1) / L
-        psdsy_welch[:, idx] = np.sum(psdsy[:, 0:idx + 1], axis=1) / L
+        psds1_MA[:, idx] = np.sum(psds1[:, 0:idx + 1], axis=1) / L
+        psds2_MA[:, idx] = np.sum(psds2[:, 0:idx + 1], axis=1) / L
+        psdsy_MA[:, idx] = np.sum(psdsy[:, 0:idx + 1], axis=1) / L
 
     else:
-        psds1_welch[:, idx] = np.mean(psds1[:, idx - (L-1):idx+1], axis=1)
-        psds2_welch[:, idx] = np.mean(psds2[:, idx - (L - 1):idx + 1], axis=1)
-        psdsy_welch[:, idx] = np.mean(psdsy[:, idx - (L - 1):idx + 1], axis=1)
+        psds1_MA[:, idx] = np.mean(psds1[:, idx - (L - 1):idx + 1], axis=1)
+        psds2_MA[:, idx] = np.mean(psds2[:, idx - (L - 1):idx + 1], axis=1)
+        psdsy_MA[:, idx] = np.mean(psdsy[:, idx - (L - 1):idx + 1], axis=1)
 
     # Exponential averaging
     tmp1 = alpha*tmp1 + (1-alpha)*(psds1[:, idx])
@@ -144,11 +144,16 @@ taxis = np.arange(len(y), step=(winlen - overlap)) / fs
 # taxis = taxis[0:len(taxis) - 1]  # used this when there were overlapping windows
 
 y_psd_single_freq = psdsy_exp[idx_freq, :]
-fig = plt.figure()
+fig = plt.figure(figsize=(15,6))
 plt.plot(taxis, y_psd_single_freq)
 plt.plot(taxis, psdsy_cheat)
-plt.legend([r'$\Phi_{Y}$', r'$A@\Phi_{S}$'])
-plt.xlabel("Time (s)")
+for i in range(1,n_pos):
+    plt.axvline(x=i*duration_sig/n_pos, color='red')
+plt.xlim(0,duration_sig - (winlen/fs))
+plt.ticklabel_format(axis='y',style='sci', scilimits=(0, 1))
+plt.legend([r'$\Phi_{Y}$', r'$A\times\Phi_{S}$'])
+plt.ylabel("PSD estimate at one frequency", fontsize=14)
+plt.xlabel("Time [seconds]", fontsize=14)
 plt.show()
 print("Hello World")
 
